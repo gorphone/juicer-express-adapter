@@ -1,4 +1,5 @@
 var juicer = require('juicer');
+var fs = require('fs');
 
 module.exports = function(tplPath, options, fn) {
     var includeFileDetect = function(str) {
