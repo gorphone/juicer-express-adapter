@@ -56,9 +56,11 @@ module.exports = function(tplPath, options, fn) {
 
         return str;
     };
-    
+
     fs.readFile(tplPath, 'utf8', function(err, str) {
         if (err) return fn(err);
+        // PreDetect For Helper Register
+        includeFileDetect(str);
         str = juicer(str, options);
         str = includeFileDetect(str);
         fn(null, str);
