@@ -2,6 +2,9 @@ var juicer = require('juicer');
 var fs = require('fs');
 var path = require('path');
 
+// disabled auto strip
+juicer.set('strip', false);
+
 module.exports = function(tplPath, options, fn) {
     var deep = function(data, scope, _tmp) {
         _tmp = data;
