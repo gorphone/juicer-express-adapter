@@ -22,7 +22,7 @@ module.exports = function(tplPath, options, fn) {
         return _tmp;
     };
 
-    var includeFileDetect = function(str) {
+    var includeFileDetect = function(str, opts) {
         var includeWithoutRender = juicer.tags.operationOpen + 'include\\s*([^}]*?)\\s*' + juicer.tags.operationClose;
         juicer.settings.includeWithoutRender = new RegExp(includeWithoutRender, 'igm');
 
@@ -33,7 +33,7 @@ module.exports = function(tplPath, options, fn) {
                     tpl = path.resolve(path.dirname(tplPath), tpl);
                     tpl = fs.readFileSync(tpl, 'utf8');
                     data === '_' ? data = options : data = deep(options, data);
-                    return juicer(includeFileDetect(tpl), data);
+                    return juicer(includeFileDetect(tpl, opts), data, opts);
                 }
 
                 return $;
@@ -48,7 +48,7 @@ module.exports = function(tplPath, options, fn) {
                     tpl = tpl.substr(7);
                     tpl = path.resolve(path.dirname(tplPath), tpl);
                     tpl = fs.readFileSync(tpl, 'utf8');
-                    return includeFileDetect(tpl);
+                    return includeFileDetect(tpl, opts);
                 }
 
                 return $;
@@ -63,7 +63,7 @@ module.exports = function(tplPath, options, fn) {
     fs.readFile(tplPath, 'utf8', function(err, str) {
         if (err) return fn(err);
         // PreDetect For Helper Register
-        includeFileDetect(str);
+        includeFileDetect(str, { cache: false });
         str = juicer(str, options);
         str = includeFileDetect(str);
         fn(null, str);
