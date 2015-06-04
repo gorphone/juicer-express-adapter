@@ -22,7 +22,7 @@ module.exports = function(tplPath, options, fn) {
         return _tmp;
     };
 
-    var includeFileDetect = function(str, opts) {
+    var includeFileDetect = function(tplPath, str, opts) {
         var includeWithoutRender = juicer.tags.operationOpen + 'include\\s*([^}]*?)\\s*' + juicer.tags.operationClose;
         juicer.settings.includeWithoutRender = new RegExp(includeWithoutRender, 'igm');
 
@@ -30,10 +30,10 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
-                    tpl = path.resolve(path.dirname(tplPath), tpl);
-                    tpl = fs.readFileSync(tpl, 'utf8');
+                    var _tplPath = path.resolve(path.dirname(tplPath), tpl);
+                    tpl = fs.readFileSync(_tplPath, 'utf8');
                     data === '_' ? data = options : data = deep(options, data);
-                    return juicer(includeFileDetect(tpl, opts), data, opts);
+                    return juicer(includeFileDetect(_tplPath, tpl, opts), data, opts);
                 }
 
                 return $;
@@ -46,9 +46,9 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
-                    tpl = path.resolve(path.dirname(tplPath), tpl);
-                    tpl = fs.readFileSync(tpl, 'utf8');
-                    return includeFileDetect(tpl, opts);
+                    var _tplPath = path.resolve(path.dirname(tplPath), tpl);
+                    tpl = fs.readFileSync(_tplPath, 'utf8');
+                    return includeFileDetect(_tplPath, tpl, opts);
                 }
 
                 return $;
@@ -63,9 +63,9 @@ module.exports = function(tplPath, options, fn) {
     fs.readFile(tplPath, 'utf8', function(err, str) {
         if (err) return fn(err);
         // PreDetect For Helper Register
-        includeFileDetect(str, { cache: false });
+        includeFileDetect(tplPath, str, { cache: false });
         str = juicer(str, options);
-        str = includeFileDetect(str);
+        str = includeFileDetect(tplPath, str);
         fn(null, str);
     });
 };
