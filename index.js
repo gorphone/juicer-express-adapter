@@ -30,11 +30,10 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
-                    tpl = path.resolve(path.dirname(tplPath), tpl);
-                    tplPath = path.dirname(tpl);
-                    tpl = fs.readFileSync(tpl, 'utf8');
+                    var _tplPath = path.resolve(path.dirname(tplPath), tpl);
+                    tpl = fs.readFileSync(_tplPath, 'utf8');
                     data === '_' ? data = options : data = deep(options, data);
-                    return juicer(includeFileDetect(tplPath, tpl, opts), data, opts);
+                    return juicer(includeFileDetect(_tplPath, tpl, opts), data, opts);
                 }
 
                 return $;
@@ -47,10 +46,9 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
-                    tpl = path.resolve(path.dirname(tplPath), tpl);
-                    tplPath = path.dirname(tpl);
-                    tpl = fs.readFileSync(tplPath, tpl, 'utf8');
-                    return includeFileDetect(tpl, opts);
+                    var _tplPath = path.resolve(path.dirname(tplPath), tpl);
+                    tpl = fs.readFileSync(_tplPath, 'utf8');
+                    return includeFileDetect(_tplPath, tpl, opts);
                 }
 
                 return $;
