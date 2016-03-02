@@ -7,3 +7,7 @@ Juicer Express Adapter Change History
 
 * Fix relative path error in deep include.
 
+0.1.7
+-----
+
+* Update dependencies in package.json after juicer released 0.6.12.

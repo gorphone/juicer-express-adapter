@@ -1,6 +1,6 @@
 {
   "name": "juicer-express-adapter",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "a high-performance lightweight javascript template engine",
   "homepage": "http://juicer.name",
   "author": "juicer.js authors {badkaikai@gmail.com | http://benben.cc}",
@@ -20,7 +20,7 @@
   "engines": {
     "node": ">=0.4.7"
   },
-  "devDependencies": {
-    "juicer": "^0.6.6-stable"
+  "dependencies": {
+    "juicer": "^0.6.12"
   }
 }
