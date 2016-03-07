@@ -8,11 +8,23 @@ var cache = LRUCache({
     maxAge: 1000 * 60 * 60 * 24
 });
 
-var _set = cache.set;
+var _cacheset = cache.set;
+var _cacheget = cache.get;
+var _cachehas = cache.has;
 
 cache.set = function(key, value, maxAge) {
     key = crypto.createHash('md5').update(key).digest('hex');
-    _set.call(cache, key, value, maxAge);
+    return _cacheset.call(cache, key, value, maxAge);
+};
+
+cache.get = function(key) {
+    key = crypto.createHash('md5').update(key).digest('hex');
+    return _cacheget.call(cache, key);
+};
+
+cache.has = function(key) {
+    key = crypto.createHash('md5').update(key).digest('hex');
+    return _cachehas.call(cache, key);
 };
 
 // disabled auto strip
@@ -45,8 +57,16 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
+
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
-                    tpl = fs.readFileSync(_tplPath, 'utf8');
+
+                    if(!cache.has(_tplPath)) {
+                        tpl = fs.readFileSync(_tplPath, 'utf8');
+                        cache.set(_tplPath, tpl);
+                    } else {
+                        tpl = cache.get(_tplPath);
+                    }
+
                     data === '_' ? data = options : data = deep(options, data);
                     return juicer(includeFileDetect(_tplPath, tpl, opts), data, opts);
                 }
@@ -75,10 +95,25 @@ module.exports = function(tplPath, options, fn) {
         return str;
     };
 
-    fs.readFile(tplPath, 'utf8', function(err, str) {
-        if (err) return fn(err);
+    var callback = function(err, str, tplPath) {
+        if (err) {
+            return fn(err);
+        }
+
         str = juicer(str, options);
         str = includeFileDetect(tplPath, str);
         fn(null, str);
+    };
+
+    if(cache.get(tplPath)) {
+        return callback(null, cache.get(tplPath), tplPath);
+    }
+
+    fs.readFile(tplPath, 'utf8', function(err, str) {
+        if(!err) {
+            cache.set(tplPath, str);
+        }
+
+        callback(err, str, tplPath);
     });
 };

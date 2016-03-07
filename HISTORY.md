@@ -16,3 +16,8 @@ Juicer Express Adapter Change History
 -----
 
 * Update to use `lru-cache` as juicer cache storage.
+
+0.1.9
+-----
+
+* Update to use `lru-cache` to cache the tpl file read in Node.js.
