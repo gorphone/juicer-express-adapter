@@ -9,6 +9,7 @@ var cache = LRUCache({
 
 // disabled auto strip
 juicer.set('strip', false);
+juicer.set('cache', true);
 juicer.set('cachestore', cache);
 
 module.exports = function(tplPath, options, fn) {
