@@ -1,9 +1,15 @@
 var juicer = require('juicer');
 var fs = require('fs');
 var path = require('path');
+var LRUCache = require('lru-cache');
+var cache = LRUCache({
+    max: 1000,
+    maxAge: 1000 * 60 * 60 * 24
+});
 
 // disabled auto strip
 juicer.set('strip', false);
+juicer.set('cachestore', cache);
 
 module.exports = function(tplPath, options, fn) {
     var deep = function(data, scope, _tmp) {
@@ -62,8 +68,6 @@ module.exports = function(tplPath, options, fn) {
 
     fs.readFile(tplPath, 'utf8', function(err, str) {
         if (err) return fn(err);
-        // PreDetect For Helper Register
-        includeFileDetect(tplPath, str, { cache: false });
         str = juicer(str, options);
         str = includeFileDetect(tplPath, str);
         fn(null, str);

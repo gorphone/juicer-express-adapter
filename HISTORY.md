@@ -11,3 +11,8 @@ Juicer Express Adapter Change History
 -----
 
 * Update dependencies in package.json after juicer released 0.6.12.
+
+0.1.8
+-----
+
+* Update to use `lru-cache` as juicer cache storage.
