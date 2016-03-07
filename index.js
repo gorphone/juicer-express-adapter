@@ -13,7 +13,6 @@ var _set = cache.set;
 cache.set = function(key, value, maxAge) {
     key = crypto.createHash('md5').update(key).digest('hex');
     _set.call(cache, key, value, maxAge);
-    console.log(key, value, maxAge);
 };
 
 // disabled auto strip
