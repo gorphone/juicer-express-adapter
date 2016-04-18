@@ -131,6 +131,6 @@ module.exports.cacheOff = function () {
 module.exports.cacheOn = function () {
     juicer.set('cache', true);
     cache.set = cacheset;
-    cacheget = cacheget;
-    cachehas = cachehas;
+    cache.get = cacheget;
+    cache.has = cachehas;
 };
