@@ -12,17 +12,21 @@ var _cacheset = cache.set;
 var _cacheget = cache.get;
 var _cachehas = cache.has;
 
-cache.set = function(key, value, maxAge) {
+var noop = function () {
+    return false;
+};
+
+var cacheset = cache.set = function (key, value, maxAge) {
     key = crypto.createHash('md5').update(key).digest('hex');
     return _cacheset.call(cache, key, value, maxAge);
 };
 
-cache.get = function(key) {
+var cacheget = cache.get = function (key) {
     key = crypto.createHash('md5').update(key).digest('hex');
     return _cacheget.call(cache, key);
 };
 
-cache.has = function(key) {
+var cachehas = cache.has = function (key) {
     key = crypto.createHash('md5').update(key).digest('hex');
     return _cachehas.call(cache, key);
 };
@@ -105,7 +109,7 @@ module.exports = function(tplPath, options, fn) {
         fn(null, str);
     };
 
-    if(cache.get(tplPath)) {
+    if(cache.has(tplPath)) {
         return callback(null, cache.get(tplPath), tplPath);
     }
 
@@ -116,4 +120,17 @@ module.exports = function(tplPath, options, fn) {
 
         callback(err, str, tplPath);
     });
+};
+
+// export API for cache
+module.exports.cacheOff = function () {
+    juicer.set('cache', false);
+    cache.set = cache.get = cache.has = noop;
+};
+
+module.exports.cacheOn = function () {
+    juicer.set('cache', true);
+    cache.set = cacheset;
+    cacheget = cacheget;
+    cachehas = cachehas;
 };
