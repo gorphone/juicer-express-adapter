@@ -5,7 +5,7 @@ var crypto = require('crypto');
 var LRUCache = require('lru-cache');
 var cache = LRUCache({
     max: 1000,
-    maxAge: 1000 * 60 * 60 * 24
+    maxAge: 1000 * 60 * 60 * 24 * 30
 });
 
 var _cacheset = cache.set;
@@ -30,6 +30,11 @@ var cachehas = cache.has = function (key) {
     key = crypto.createHash('md5').update(key).digest('hex');
     return _cachehas.call(cache, key);
 };
+
+var renderHook = {
+    before: noop,
+    after: noop
+}
 
 // disabled auto strip
 juicer.set('strip', false);
@@ -88,7 +93,12 @@ module.exports = function(tplPath, options, fn) {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
-                    tpl = fs.readFileSync(_tplPath, 'utf8');
+                    if(!cache.has('WithoutRender:' + _tplPath)) {
+                        tpl = fs.readFileSync(_tplPath, 'utf8');
+                        cache.set('WithoutRender:' + _tplPath, tpl);
+                    } else {
+                        tpl = cache.get('WithoutRender:' + _tplPath);
+                    }
                     return includeFileDetect(_tplPath, tpl, opts);
                 }
 
@@ -101,14 +111,19 @@ module.exports = function(tplPath, options, fn) {
         return str;
     };
 
+    // beforeRender
+    renderHook.before(tplPath, cache);
+
     var callback = function(err, compile, tplPath) {
         if (err) {
+            renderHook.after(tplPath, cache, err);
             return fn(err);
         }
 
         var str = compile.render(options);
         str = includeFileDetect(tplPath, str);
         fn(null, str);
+        renderHook.after(tplPath, cache);
     };
 
     if(cache.has(tplPath)) {
@@ -136,4 +151,14 @@ module.exports.cacheOn = function () {
     cache.set = cacheset;
     cache.get = cacheget;
     cache.has = cachehas;
+};
+
+// export API to inject render
+module.exports.hook = function (hook) {
+    if (hook.before) {
+        renderHook.before = hook.before;
+    }
+    if (hook.after) {
+        renderHook.after = hook.after;
+    }
 };
