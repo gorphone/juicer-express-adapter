@@ -61,18 +61,20 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
+                    var compile;
 
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
+                    data === '_' ? data = options : data = deep(options, data);                    
 
                     if(!cache.has(_tplPath)) {
                         tpl = fs.readFileSync(_tplPath, 'utf8');
-                        cache.set(_tplPath, tpl);
+                        compile = juicer.compile(includeFileDetect(_tplPath, tpl, opts));
+                        cache.set(_tplPath, compile);
                     } else {
-                        tpl = cache.get(_tplPath);
+                        compile = cache.get(_tplPath);
                     }
 
-                    data === '_' ? data = options : data = deep(options, data);
-                    return juicer(includeFileDetect(_tplPath, tpl, opts), data, opts);
+                    return compile.render(data, opts);
                 }
 
                 return $;
@@ -99,12 +101,12 @@ module.exports = function(tplPath, options, fn) {
         return str;
     };
 
-    var callback = function(err, str, tplPath) {
+    var callback = function(err, compile, tplPath) {
         if (err) {
             return fn(err);
         }
 
-        str = juicer(str, options);
+        var str = compile.render(options);
         str = includeFileDetect(tplPath, str);
         fn(null, str);
     };
@@ -114,11 +116,12 @@ module.exports = function(tplPath, options, fn) {
     }
 
     fs.readFile(tplPath, 'utf8', function(err, str) {
+        var compile = juicer.compile(str);
         if(!err) {
-            cache.set(tplPath, str);
+            cache.set(tplPath, compile);
         }
 
-        callback(err, str, tplPath);
+        callback(err, compile, tplPath);
     });
 };
 
