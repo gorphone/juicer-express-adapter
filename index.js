@@ -72,7 +72,6 @@ module.exports = function(tplPath, options, fn) {
                     tpl = tpl.substr(7);
 
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
-                    data === '_' ? data = options : data = deep(options, data);                    
 
                     if(!cache.has(_tplPath)) {
                         tpl = fs.readFileSync(_tplPath, 'utf8');
@@ -136,9 +135,6 @@ module.exports = function(tplPath, options, fn) {
     fs.readFile(tplPath, 'utf8', function(err, str) {
         // hook io
         renderHook.io(tplPath, cache);
-
-        // 处理模板编译
-        cache.set(tplPath, str);
 
         if(!err) {
             cache.set(tplPath, str);
