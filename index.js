@@ -33,6 +33,10 @@ var cachehas = cache.has = function (key) {
 
 var renderHook = {
     before: noop,
+    io: noop,
+    compile: noop,
+    render: noop,
+    include: noop,
     after: noop
 }
 
@@ -119,9 +123,15 @@ module.exports = function(tplPath, options, fn) {
             renderHook.after(tplPath, cache, err);
             return fn(err);
         }
-
+        // 渲染
         var str = compile.render(options);
+        renderHook.render(tplPath, cache);
+
+        // 处理引入
         str = includeFileDetect(tplPath, str);
+        renderHook.include(tplPath, cache);
+
+        // 处理回调
         fn(null, str);
         renderHook.after(tplPath, cache);
     };
@@ -131,11 +141,16 @@ module.exports = function(tplPath, options, fn) {
     }
 
     fs.readFile(tplPath, 'utf8', function(err, str) {
+        // hook io
+        renderHook.io(tplPath, cache);
+
+        // 处理模板编译
         var compile = juicer.compile(str);
+        renderHook.compile(tplPath, cache);
+
         if(!err) {
             cache.set(tplPath, compile);
         }
-
         callback(err, compile, tplPath);
     });
 };
@@ -155,10 +170,9 @@ module.exports.cacheOn = function () {
 
 // export API to inject render
 module.exports.hook = function (hook) {
-    if (hook.before) {
-        renderHook.before = hook.before;
-    }
-    if (hook.after) {
-        renderHook.after = hook.after;
+    for (var i in hook) {
+        if (renderHook.hasOwnProperty(i)) {
+            renderHook[i] = hook[i];
+        }
     }
 };

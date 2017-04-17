@@ -1,6 +1,6 @@
 {
-  "name": "juicer-express-adapter",
-  "version": "0.1.10",
+  "name": "@hfe/juicer-express-adapter",
+  "version": "0.1.11",
   "description": "a high-performance lightweight javascript template engine",
   "homepage": "http://juicer.name",
   "author": "juicer.js authors {badkaikai@gmail.com | http://benben.cc}",
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:PaulGuo/juicer-express-adapter.git"
+    "url": "git@github.com:gorphone/juicer-express-adapter.git"
   },
   "main": "./index",
   "engines": {
