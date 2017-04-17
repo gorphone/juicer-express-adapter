@@ -5,7 +5,7 @@ var crypto = require('crypto');
 var LRUCache = require('lru-cache');
 var cache = LRUCache({
     max: 1000,
-    maxAge: 1000 * 60 * 60 * 24 * 30
+    maxAge: 1000 * 60 * 60 * 24
 });
 
 var _cacheset = cache.set;
@@ -70,20 +70,19 @@ module.exports = function(tplPath, options, fn) {
             try {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
-                    var compile;
 
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
                     data === '_' ? data = options : data = deep(options, data);                    
 
                     if(!cache.has(_tplPath)) {
                         tpl = fs.readFileSync(_tplPath, 'utf8');
-                        compile = juicer.compile(includeFileDetect(_tplPath, tpl, opts));
-                        cache.set(_tplPath, compile);
+                        cache.set(_tplPath, tpl);
                     } else {
-                        compile = cache.get(_tplPath);
+                        tpl = cache.get(_tplPath);
                     }
 
-                    return compile.render(data, opts);
+                    data === '_' ? data = options : data = deep(options, data);
+                    return juicer(includeFileDetect(_tplPath, tpl, opts), data, opts);
                 }
 
                 return $;
@@ -97,12 +96,7 @@ module.exports = function(tplPath, options, fn) {
                 if(tpl.match(/^file\:\/\//igm)) {
                     tpl = tpl.substr(7);
                     var _tplPath = path.resolve(path.dirname(tplPath), tpl);
-                    if(!cache.has('WithoutRender:' + _tplPath)) {
-                        tpl = fs.readFileSync(_tplPath, 'utf8');
-                        cache.set('WithoutRender:' + _tplPath, tpl);
-                    } else {
-                        tpl = cache.get('WithoutRender:' + _tplPath);
-                    }
+                    tpl = fs.readFileSync(_tplPath, 'utf8');
                     return includeFileDetect(_tplPath, tpl, opts);
                 }
 
@@ -118,13 +112,12 @@ module.exports = function(tplPath, options, fn) {
     // beforeRender
     renderHook.before(tplPath, cache);
 
-    var callback = function(err, compile, tplPath) {
+    var callback = function(err, str, tplPath) {
         if (err) {
             renderHook.after(tplPath, cache, err);
             return fn(err);
         }
-        // 渲染
-        var str = compile.render(options);
+        str = juicer(str, options);
         renderHook.render(tplPath, cache);
 
         // 处理引入
@@ -145,13 +138,12 @@ module.exports = function(tplPath, options, fn) {
         renderHook.io(tplPath, cache);
 
         // 处理模板编译
-        var compile = juicer.compile(str);
-        renderHook.compile(tplPath, cache);
+        cache.set(tplPath, str);
 
         if(!err) {
-            cache.set(tplPath, compile);
+            cache.set(tplPath, str);
         }
-        callback(err, compile, tplPath);
+        callback(err, str, tplPath);
     });
 };
 
